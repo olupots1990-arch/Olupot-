@@ -1,0 +1,22 @@
+
+{
+  "short_name": "Stanley Restaurant",
+  "name": "Stanley Restaurant Chatbot",
+  "description": "A WhatsApp-style chatbot for Stanley Restaurant, featuring multiple Gemini models for chat, ordering, and image analysis.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#16a34a",
+  "background_color": "#ffffff"
+}

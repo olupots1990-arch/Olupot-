@@ -1,0 +1,8 @@
+{
+  "name": "Stanley Restaurant",
+  "description": "A WhatsApp-style chatbot for Stanley Restaurant, featuring multiple models for standard chat, complex queries (Thinking Mode), low-latency responses, image analysis, and text-to-speech output.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
