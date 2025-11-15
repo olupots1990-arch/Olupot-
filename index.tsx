@@ -26,7 +26,10 @@ const renderApp = () => {
 // Create and append the script tag to load the Google Maps API.
 // The `callback=initMap` parameter executes the function above once the script is loaded.
 const script = document.createElement('script');
-script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.API_KEY}&callback=initMap`;
+// During the Netlify build, process.env.API_KEY is replaced with a quoted string like "'YOUR_KEY'".
+// We need to remove these quotes for the Google Maps URL parameter to be valid.
+const apiKey = (process.env.API_KEY || '').replace(/'/g, '');
+script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
 script.async = true;
 script.defer = true;
 document.head.appendChild(script);

@@ -425,19 +425,31 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ systemInstruction, onNewO
                     text: finalResponse.text,
                     timestamp: getTimestamp(),
                 });
-                const itemsSummary = newOrder.items.map(item => `- ${item.quantity}x ${item.name}`).join('\n');
-                const approvalLink = `${window.location.origin}${window.location.pathname}?view=admin&action=approve&orderId=${newOrder.id}`;
-                const shareSummary = `Hello! I'd like to place an order from STANLEY'S CAFETERIA. Please approve it.\n\n*Order ID:* ${newOrder.id}\n*Customer:* ${newOrder.customerName}\n*Phone:* ${newOrder.phoneNumber}\n*Items:*\n${itemsSummary}\n*Address:* ${newOrder.deliveryAddress}\n\n*Admin Approval Link:* ${approvalLink}`;
                 
+                // Generate detailed summaries for display and WhatsApp
+                const orderTotal = newOrder.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                const itemsSummaryForDisplay = newOrder.items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+                const itemsSummaryForWhatsApp = newOrder.items.map(item => `- ${item.quantity}x ${item.name} @ $${item.price.toFixed(2)}`).join('\n');
+                
+                // Create the deep link for admin approval
+                const approvalLink = `${window.location.origin}${window.location.pathname}?view=admin&action=approve&orderId=${newOrder.id}`;
+                
+                // Construct the pre-filled WhatsApp message
+                const shareSummary = `Hello! Please approve my order from STANLEY'S CAFETERIA.\n\n*Order ID:* ${newOrder.id}\n*Customer:* ${newOrder.customerName}\n*Phone:* ${newOrder.phoneNumber}\n*Address:* ${newOrder.deliveryAddress}\n\n*Items:*\n${itemsSummaryForWhatsApp}\n*Total:* $${orderTotal.toFixed(2)}\n\n*Admin Approval Link:* ${approvalLink}`;
+                
+                // Construct the system message to be displayed in the chat
+                const systemMessageText = `Order Summary (Total: $${orderTotal.toFixed(2)}):\nItems: ${itemsSummaryForDisplay}\nAddress: ${newOrder.deliveryAddress}\n\nPlease click below to send this order for approval via WhatsApp.`;
+
                 responseMessages.push({
                     id: `system-delivery-update-${newOrder.id}`,
                     author: MessageAuthor.SYSTEM,
-                    text: `Your order has been submitted! Please send it to the restaurant on WhatsApp for approval.`,
+                    text: systemMessageText, // Updated to show summary in chat
                     timestamp: getTimestamp(),
                     orderId: newOrder.id,
                     cancellable: true,
-                    orderSummaryForShare: shareSummary,
+                    orderSummaryForShare: shareSummary, // Updated to include price details
                 });
+
             } else {
                 console.warn(`Unsupported function call: ${fc.name}`);
             }
