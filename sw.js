@@ -6,6 +6,7 @@ const urlsToCache = [
   '/App.tsx',
   '/types.ts',
   '/metadata.json',
+  '/manifest.json',
   '/services/geminiService.ts',
   '/utils/audio.ts',
   '/utils/image.ts',
@@ -17,9 +18,8 @@ const urlsToCache = [
   '/components/MessageInput.tsx',
   '/components/ChatMessage.tsx',
   '/components/Menu.tsx',
-  '/components/icons.tsx',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/components/CustomerDashboard.tsx',
+  '/components/icons.tsx'
 ];
 
 self.addEventListener('install', (event) => {
