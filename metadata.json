@@ -1,5 +1,5 @@
 {
-  "name": "Copy of stanley Restaurant Review Chatbot",
+  "name": "f stanley Restaurant ",
   "description": "A WhatsApp-style chatbot for a restaurant review business, featuring multiple  models for standard chat, complex queries (Thinking Mode), low-latency responses, image analysis, and text-to-speech output.",
   "requestFramePermissions": [
     "microphone",
