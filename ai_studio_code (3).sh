@@ -1,0 +1,1 @@
+keytool -list -v -keystore /path/to/your/release-keystore.jks -alias your-key-alias

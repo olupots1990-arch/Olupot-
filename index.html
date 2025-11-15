@@ -1,14 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stanley Restaurant Chatbot</title>
+    <title>Stanley Restaurant Review Chatbot</title>
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#16a34a" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
   <script type="importmap">
 {
   "imports": {
@@ -19,9 +20,43 @@
   }
 }
 </script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          keyframes: {
+            'fade-in-down': {
+              '0%': {
+                opacity: '0',
+                transform: 'translateY(-10px)'
+              },
+              '100%': {
+                opacity: '1',
+                transform: 'translateY(0)'
+              },
+            },
+            'fade-in-up': {
+              '0%': {
+                opacity: '0',
+                transform: 'translateY(20px)'
+              },
+              '100%': {
+                opacity: '1',
+                transform: 'translateY(0)'
+              },
+            }
+          },
+          animation: {
+            'fade-in-down': 'fade-in-down 0.5s ease-out',
+            'fade-in-up': 'fade-in-up 0.3s ease-out'
+          }
+        }
+      }
+    }
+  </script>
 </head>
   <body class="bg-gray-100">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="text/babel" data-type="module" src="/index.tsx"></script>
   </body>
 </html>

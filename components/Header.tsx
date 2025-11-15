@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatMode } from '../types';
 import { BrainIcon, FlashIcon, BoltIcon, ThreeDotsIcon, SearchIcon, ArrowLeftIcon, CloseIcon, BotIcon, MicrophoneIcon } from './icons';
@@ -9,9 +10,10 @@ interface HeaderProps {
   onClearChat: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onSearchSubmit: (query: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentMode, onModeChange, onClearChat, searchQuery, onSearchChange }) => {
+const Header: React.FC<HeaderProps> = ({ currentMode, onModeChange, onClearChat, searchQuery, onSearchChange, onSearchSubmit }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,23 +52,28 @@ const Header: React.FC<HeaderProps> = ({ currentMode, onModeChange, onClearChat,
     setSearchActive(false);
   }
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearchSubmit(searchQuery);
+  };
+
   return (
     <div className="flex items-center justify-between p-3 bg-green-600 dark:bg-green-800 text-white shadow-md transition-all duration-300">
       {searchActive ? (
-        <div className="flex items-center w-full">
-            <button onClick={handleSearchExit} className="p-2 rounded-full hover:bg-white/20"><ArrowLeftIcon className="w-6 h-6"/></button>
+        <form onSubmit={handleSearchSubmit} className="flex items-center w-full">
+            <button type="button" onClick={handleSearchExit} className="p-2 rounded-full hover:bg-white/20"><ArrowLeftIcon className="w-6 h-6"/></button>
             <input 
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search messages..."
+                placeholder="AI search history and press Enter..."
                 className="w-full bg-transparent focus:outline-none px-3 text-lg"
             />
             {searchQuery && (
-                <button onClick={() => onSearchChange('')} className="p-2 rounded-full hover:bg-white/20"><CloseIcon className="w-6 h-6"/></button>
+                <button type="button" onClick={() => onSearchChange('')} className="p-2 rounded-full hover:bg-white/20"><CloseIcon className="w-6 h-6"/></button>
             )}
-        </div>
+        </form>
       ) : (
         <>
           <div className="flex items-center">

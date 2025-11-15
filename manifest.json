@@ -1,8 +1,7 @@
-
 {
-  "short_name": "Stanley Restaurant",
-  "name": "Stanley Restaurant Chatbot",
-  "description": "A WhatsApp-style chatbot for Stanley Restaurant, featuring multiple Gemini models for chat, ordering, and image analysis.",
+  "short_name": "Stanley's Cafe",
+  "name": "Stanley's Cafeteria Chatbot",
+  "description": "A WhatsApp-style chatbot for Stanley's Cafeteria, featuring multiple Gemini models for chat, ordering, and image analysis.",
   "icons": [
     {
       "src": "/icon-192.png",

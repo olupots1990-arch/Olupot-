@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'stanley-restaurant-cache-v1';
+const CACHE_NAME = 'stanley-cafeteria-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',

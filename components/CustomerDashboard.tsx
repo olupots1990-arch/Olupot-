@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import Menu from './Menu';
@@ -13,6 +12,8 @@ type CartItem = {
     quantity: number;
 }
 
+const MINIMUM_ORDER_VALUE = 10;
+
 const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -20,6 +21,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) =
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [orderSummary, setOrderSummary] = useState<{ cart: CartItem[], address: string } | null>(null);
+  const [addressError, setAddressError] = useState('');
 
   useEffect(() => {
     const storedProducts = JSON.parse(localStorage.getItem('geminiProducts') || '[]');
@@ -47,9 +49,10 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) =
   const handleShowConfirmation = (e: React.FormEvent) => {
       e.preventDefault();
       if(deliveryAddress.trim() === '') {
-          alert('Please enter a delivery address.');
+          setAddressError('Delivery address cannot be empty.');
           return;
       }
+      setAddressError('');
       setOrderSummary({ cart, address: deliveryAddress });
       setIsAddressModalOpen(false);
       setIsConfirmationModalOpen(true);
@@ -66,6 +69,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) =
   }
 
   const cartTotal = cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+  const isBelowMinimum = cart.length > 0 && cartTotal < MINIMUM_ORDER_VALUE;
 
   return (
     <div className="w-full md:w-3/5 p-4 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 overflow-y-auto hidden md:flex flex-col">
@@ -82,11 +86,14 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) =
                   <input 
                     type="text" 
                     value={deliveryAddress} 
-                    onChange={e => setDeliveryAddress(e.target.value)} 
-                    required 
+                    onChange={e => {
+                        setDeliveryAddress(e.target.value);
+                        if (addressError) setAddressError('');
+                    }} 
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700" 
                     placeholder="e.g., 123 Main St, Anytown, USA"
                   />
+                  {addressError && <p className="text-red-500 text-sm mt-1">{addressError}</p>}
                 </div>
                 <div className="mt-6 flex justify-end">
                   <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Review Order</button>
@@ -129,7 +136,7 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) =
        )}
 
       <div className="flex-shrink-0 p-4 mb-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Stanley Restaurant Menu</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Stanley's Cafeteria Menu</h2>
         <p className="text-gray-600 dark:text-gray-400">Browse our menu and add items to your cart.</p>
       </div>
 
@@ -156,11 +163,22 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ onPlaceOrder }) =
                     </div>
                 ))}
             </div>
-            <div className="border-t dark:border-gray-700 pt-3 flex justify-between items-center">
-                <span className="font-bold text-xl">Total: ${cartTotal.toFixed(2)}</span>
-                <button onClick={() => setIsAddressModalOpen(true)} className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg shadow hover:bg-blue-700">
-                    Place Order
-                </button>
+            <div className="border-t dark:border-gray-700 pt-3">
+                <div className="flex justify-between items-center">
+                    <span className="font-bold text-xl">Total: ${cartTotal.toFixed(2)}</span>
+                    <button 
+                        onClick={() => setIsAddressModalOpen(true)} 
+                        className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg shadow hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled={isBelowMinimum}
+                    >
+                        Place Order
+                    </button>
+                </div>
+                {isBelowMinimum && (
+                    <p className="text-right text-sm text-red-500 dark:text-red-400 mt-2">
+                        You need ${ (MINIMUM_ORDER_VALUE - cartTotal).toFixed(2) } more to reach the minimum order of ${MINIMUM_ORDER_VALUE.toFixed(2)}.
+                    </p>
+                )}
             </div>
           </div>
       )}

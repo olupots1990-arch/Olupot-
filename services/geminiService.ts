@@ -1,7 +1,6 @@
-
 import { GoogleGenAI, Chat, Modality, FunctionDeclaration, Type, GenerateContentResponse, LiveServerMessage, Blob } from "@google/genai";
-import { ChatMode } from "../types";
-import { decode, decodeAudioData } from '../utils/audio';
+import { ChatMode, Message } from "../types";
+import { decode, pcmToWav } from '../utils/audio';
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
@@ -21,7 +20,6 @@ const MODEL_CONFIG = {
     },
   },
   [ChatMode.LOW_LATENCY]: {
-    // Fix: Updated model name to align with coding guidelines.
     name: 'gemini-flash-lite-latest',
     config: {},
   },
@@ -29,7 +27,7 @@ const MODEL_CONFIG = {
 
 const orderDeliveryFunctionDeclaration: FunctionDeclaration = {
     name: 'orderDelivery',
-    description: "Places a delivery order for food items from Stanley Restaurant to a given address. It also requires the customer's name and phone number.",
+    description: "Places a delivery order for food items from STANLEY'S CAFETERIA to a given address. It also requires the customer's name and phone number.",
     parameters: {
         type: Type.OBJECT,
         properties: {
@@ -116,17 +114,7 @@ export const analyzeImage = async (
   return response.text;
 };
 
-let audioContext: AudioContext | null = null;
-const getAudioContext = (): AudioContext => {
-  if (!audioContext || audioContext.state === 'closed') {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
-      sampleRate: 24000
-    });
-  }
-  return audioContext;
-}
-
-export const playTextToSpeech = async (text: string): Promise<void> => {
+export const getTextToSpeechUrl = async (text: string): Promise<string> => {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
     contents: [{ parts: [{ text }] }],
@@ -145,18 +133,27 @@ export const playTextToSpeech = async (text: string): Promise<void> => {
     throw new Error("No audio data received from API.");
   }
 
-  const ctx = getAudioContext();
   const decodedBytes = decode(base64Audio);
-  const audioBuffer = await decodeAudioData(decodedBytes, ctx, 24000, 1);
-  
-  const source = ctx.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(ctx.destination);
-  source.start();
+  const wavBlob = pcmToWav(decodedBytes, 24000, 1, 16);
+  const url = URL.createObjectURL(wavBlob);
+  return url;
+};
 
-  return new Promise((resolve) => {
-    source.onended = () => resolve();
+export const transcribeAudio = async (audio: { base64Audio: string; mimeType: string }): Promise<string> => {
+  const audioPart = {
+    inlineData: {
+      mimeType: audio.mimeType,
+      data: audio.base64Audio,
+    },
+  };
+  const promptPart = {
+      text: "Transcribe the following audio:"
+  };
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: { parts: [promptPart, audioPart] },
   });
+  return response.text;
 };
 
 export const connectLiveSession = (
@@ -186,4 +183,34 @@ export const connectLiveSession = (
       systemInstruction: systemInstruction,
     },
   });
+};
+
+export const performAiSearch = async (query: string, history: Message[]): Promise<string> => {
+  if (history.length === 0) {
+    return "The chat history is empty. Nothing to search.";
+  }
+
+  const formattedHistory = history
+    .filter(m => m.author === 'user' || m.author === 'bot')
+    .map(m => `${m.author}: ${m.text}`)
+    .join('\n');
+
+  const prompt = `You are an intelligent search assistant inside a chat application. 
+Your task is to analyze the provided chat history to answer the user's search query.
+Provide a concise summary of the findings. Do not greet the user, just provide the summary directly.
+
+Search Query: "${query}"
+
+Chat History:
+---
+${formattedHistory}
+---
+`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-pro',
+    contents: prompt,
+  });
+
+  return response.text;
 };
