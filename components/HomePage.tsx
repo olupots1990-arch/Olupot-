@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { PhoneIcon, MailIcon, WhatsAppIcon, InformationCircleIcon, ClockIcon, QuestionMarkCircleIcon, ChevronDownIcon, BotIcon, CloseIcon, SearchIcon, UserIcon, LogoutIcon } from './icons';
 import { FaqItem, Product, DeliveryAgent, AttendanceRecord } from '../types';
@@ -275,7 +276,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
           <div className="container mx-auto p-4 md:p-8">
               <section className="text-center mb-8">
                 <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl inline-block">
-                  <h2 className="text-3xl font-extrabold mb-3 text-white">Delicious Food, Delivered Fast.</h2>
+                  <h2 className="text-3xl font-extrabold mb-3 text-white">welcome to stanleys cafe</h2>
                   <p className="text-base text-gray-200 max-w-2xl mx-auto mb-6">
                     Welcome to Stanley's Cafeteria, where every meal is a celebration. Browse our menu and chat with our friendly bot to place your order in seconds.
                   </p>
