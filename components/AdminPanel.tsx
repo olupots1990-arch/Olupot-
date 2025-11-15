@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DeliveryOrder, AdminPanelView, Product, DeliveryAgent, FaqItem, ContactSubmission, Task, AttendanceRecord, PayrollRecord, ExpenseRecord, ExpenseCategory, InitialAction, StockRecord, LeaveRequest, LeaveRequestStatus } from '../types';
-import { PlusIcon, EditIcon, TrashIcon, SaveIcon, CloseIcon, BookOpenIcon, UsersIcon, MapPinIcon, TrendingUpIcon, ChartBarIcon, QuestionMarkCircleIcon, MailIcon, ClipboardListIcon, ClockIcon, CurrencyDollarIcon, ShoppingCartIcon, WhatsAppIcon, CheckCircleIcon, ArchiveBoxIcon, CalendarDaysIcon } from './icons';
+import { PlusIcon, EditIcon, TrashIcon, SaveIcon, CloseIcon, BookOpenIcon, UsersIcon, MapPinIcon, TrendingUpIcon, ChartBarIcon, QuestionMarkCircleIcon, MailIcon, ClipboardListIcon, ClockIcon, CurrencyDollarIcon, ShoppingCartIcon, WhatsAppIcon, CheckCircleIcon, ArchiveBoxIcon, CalendarDaysIcon, TagIcon } from './icons';
 import Menu from './Menu';
 import { compressImage } from '../utils/image';
 
@@ -873,10 +873,162 @@ const OrdersView: React.FC<{ initialAction: InitialAction }> = ({ initialAction 
   );
 };
 
+interface ProductModalProps {
+    product: Partial<Product> | null;
+    onClose: () => void;
+    onSave: (product: Partial<Product>) => void;
+}
+
+const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onSave }) => {
+    const [name, setName] = useState(product?.name || '');
+    const [price, setPrice] = useState(product?.price?.toString() || '');
+    const [description, setDescription] = useState(product?.description || '');
+    const [image, setImage] = useState(product?.image || '');
+    const [stock, setStock] = useState(product?.stock?.toString() || '');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave({ 
+            ...product, 
+            name, 
+            price: parseFloat(price) || 0, 
+            description, 
+            image, 
+            stock: parseInt(stock, 10) || 0 
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto">
+                <form onSubmit={handleSubmit}>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-semibold">{product?.id ? 'Edit Product' : 'Add New Product'}</h3>
+                        <button type="button" onClick={onClose} aria-label="Close modal"><CloseIcon className="w-6 h-6"/></button>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Product Name</label>
+                            <input type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Price ($)</label>
+                                <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} required className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Stock Quantity</label>
+                                <input type="number" step="1" value={stock} onChange={e => setStock(e.target.value)} required className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"/>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Description</label>
+                            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 resize-none" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Image URL</label>
+                            <input type="text" value={image} onChange={e => setImage(e.target.value)} placeholder="https://placehold.co/..." className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" />
+                        </div>
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                        <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"><SaveIcon className="w-5 h-5 inline mr-2"/>Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 const ProductsView: React.FC = () => {
-    // This view is a placeholder, as the functionality is within Modals triggered from other components.
-    // In a larger app, you'd list and manage products here.
-    return <div>Products View: To be implemented</div>;
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
+
+    const loadProducts = useCallback(() => {
+        const storedProducts = JSON.parse(localStorage.getItem('geminiProducts') || '[]');
+        setProducts(storedProducts);
+    }, []);
+
+    useEffect(() => {
+        loadProducts();
+    }, [loadProducts]);
+
+    const handleSave = (productData: Partial<Product>) => {
+        let updatedProducts: Product[];
+        if (productData.id) { // Editing
+            updatedProducts = products.map(p => p.id === productData.id ? { ...p, ...productData } as Product : p);
+        } else { // Adding
+            const newProduct: Product = {
+                id: `prod-${Date.now()}`,
+                name: productData.name || 'New Product',
+                price: productData.price || 0,
+                description: productData.description || '',
+                image: productData.image || '',
+                stock: productData.stock || 0,
+            };
+            updatedProducts = [...products, newProduct];
+        }
+        localStorage.setItem('geminiProducts', JSON.stringify(updatedProducts));
+        setProducts(updatedProducts);
+        setIsModalOpen(false);
+        setEditingProduct(null);
+    };
+
+    const handleDelete = (productId: string) => {
+        if (window.confirm("Are you sure you want to delete this product? This will remove it from the menu permanently.")) {
+            const updatedProducts = products.filter(p => p.id !== productId);
+            localStorage.setItem('geminiProducts', JSON.stringify(updatedProducts));
+            setProducts(updatedProducts);
+        }
+    };
+
+    return (
+        <div>
+            {isModalOpen && <ProductModal product={editingProduct} onClose={() => { setIsModalOpen(false); setEditingProduct(null); }} onSave={handleSave} />}
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold flex items-center gap-2"><TagIcon className="w-6 h-6"/>Product Management</h3>
+                <button onClick={() => { setEditingProduct({}); setIsModalOpen(true); }} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2">
+                    <PlusIcon className="w-5 h-5"/> Add Product
+                </button>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" className="px-6 py-3">Product Name</th>
+                                <th scope="col" className="px-6 py-3">Price</th>
+                                <th scope="col" className="px-6 py-3">Stock</th>
+                                <th scope="col" className="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products.map(product => (
+                                <tr key={product.id} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <div className="flex items-center gap-3">
+                                            <img src={product.image || 'https://placehold.co/40x40/cccccc/FFFFFF?text=?'} alt={product.name} className="w-10 h-10 rounded-md object-cover"/>
+                                            <div>
+                                                {product.name}
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{product.description}</p>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <td className="px-6 py-4">${product.price.toFixed(2)}</td>
+                                    <td className="px-6 py-4">{product.stock}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-3">Edit</button>
+                                        <button onClick={() => handleDelete(product.id)} className="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {products.length === 0 && <p className="text-center p-4">No products found. Click 'Add Product' to start.</p>}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 const MenuView: React.FC = () => {

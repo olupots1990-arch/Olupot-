@@ -1,7 +1,7 @@
 import React from 'react';
 
-// This file was incorrectly named and contained an invalid shell command.
-// It has been replaced with a valid, empty React component to resolve build errors.
+// This file was incorrectly named and is not used in the application.
+// It has been cleared to prevent build errors.
 const Placeholder: React.FC = () => {
     return null;
 };
