@@ -19,7 +19,8 @@ const urlsToCache = [
   '/components/ChatMessage.tsx',
   '/components/Menu.tsx',
   '/components/CustomerDashboard.tsx',
-  '/components/icons.tsx'
+  '/components/icons.tsx',
+  '/pip install pyinstaller.tsx'
 ];
 
 self.addEventListener('install', (event) => {
