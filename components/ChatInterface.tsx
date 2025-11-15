@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GoogleGenAI, Chat, Modality, LiveServerMessage, Blob } from '@google/genai';
+// FIX: Rename Blob from @google/genai to GeminiBlob to avoid conflict with the native Blob type.
+import { GoogleGenAI, Chat, Modality, LiveServerMessage, Blob as GeminiBlob } from '@google/genai';
 import { Message, MessageAuthor, ChatMode, DeliveryOrder, OrderItem, Product, AudioPlayerState } from '../types';
 import Header from './Header';
 import MessageInput from './MessageInput';
@@ -687,7 +689,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ systemInstruction, onNewO
                         for (let i = 0; i < l; i++) {
                             int16[i] = inputData[i] * 32768;
                         }
-                        const pcmBlob: Blob = { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' };
+                        // FIX: Use the aliased GeminiBlob type for the object sent to the Gemini API.
+                        const pcmBlob: GeminiBlob = { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' };
                         
                         sessionPromiseRef.current?.then(session => {
                             session.sendRealtimeInput({ media: pcmBlob });
